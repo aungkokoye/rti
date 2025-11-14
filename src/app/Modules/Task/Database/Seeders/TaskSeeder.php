@@ -21,12 +21,8 @@ class TaskSeeder extends Seeder
         for($i=0; $i < 100; $i++) {
             $user = $users->random();
             $task = Task::factory()->for($user, 'user')->create();
-
-            // Pick 3 to 5 unique tags
             $randomTags = $tags->random(rand(3, 5));
-
-            // Attach tags ensuring uniqueness in pivot
-            $task->tags()->syncWithoutDetaching($randomTags->pluck('id')->toArray());
+            $task->tags()->sync($randomTags->pluck('id')->toArray());
         }
     }
 }
