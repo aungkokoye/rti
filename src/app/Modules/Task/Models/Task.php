@@ -26,7 +26,7 @@ class Task extends Model
 
     public static array $priority = ['low', 'medium', 'high'];
 
-    public static array $allowedFilters = ['created_at', 'due_date', 'priority', 'title'];
+    public static array $allowedSortColumns = ['created_at', 'due_date', 'priority', 'title', 'status'];
     protected $fillable = ['title', 'description', 'status', 'priority', 'version', 'metadata', 'due_date', 'assigned_to'];
 
     public function user(): BelongsTo
@@ -45,6 +45,11 @@ class Task extends Model
      */
     public function scopeFilter(EloquentBuilder| QueryBuilder $query, array $filters): EloquentBuilder | QueryBuilder
     {
+        // Trim all filter values
+        $filters = array_map(function($value) {
+            return is_string($value) ? trim($value) : $value;
+        }, $filters);
+
         // Grouped OR conditions
         $query->where(function ($query) use ($filters) {
                 // keyword search
@@ -53,10 +58,9 @@ class Task extends Model
                     $query->where('title', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 }
-                // full-text search
-
             });
 
+        // full-text search
         if (!empty($filters['full-search'])) {
             $fullSearch = $filters['full-search'];
             $query->whereRaw("MATCH(title, description) AGAINST(? IN NATURAL LANGUAGE MODE)", [$fullSearch]);
@@ -74,12 +78,13 @@ class Task extends Model
         if (! auth()->user()->isAdmin()){
             $query->where('assigned_to', auth()->user()->id);
         } elseif (!empty($filters['assigned-to'])) {
-            $query->whereIn('assigned_to', explode(',', $filters['assigned-to']));
+            $assignedTo = array_map('trim', explode(',', $filters['assigned-to']));
+            $query->whereIn('assigned_to', $assignedTo);
         }
 
 
         if (!empty($filters['tags'])) {
-            $tagIds = explode(',', $filters['tags']);
+            $tagIds = array_map('trim', explode(',', $filters['tags']));
 
             $query->whereHas('tags', function ($q) use ($tagIds) {
                 $q->whereIn('tags.id', $tagIds);
@@ -96,11 +101,23 @@ class Task extends Model
 
         if (!empty($filters['sort'])) {
             $sorts = explode(',', $filters['sort']);
+            $sortType = (!empty($filters['sort-type']) && $filters['sort-type'] === 'asc') ? 'asc' : 'desc';
 
             foreach ($sorts as $sortColumn) {
-                $sortType = (!empty($filters['sort-type']) && $filters['sort-type'] === 'asc') ? 'asc' : 'desc';
-                if (in_array($sortColumn, self::$allowedFilters, true)) {
-                    $query->orderBy($sortColumn, $sortType);
+                $sortColumn = trim($sortColumn);
+
+                if (in_array($sortColumn, self::$allowedSortColumns, true)) {
+                    // Handle priority sorting with custom order (low, medium, high)
+                    if ($sortColumn === 'priority') {
+                        $query->orderByRaw("FIELD(priority, 'low', 'medium', 'high') " . $sortType);
+                    }
+                    // Handle status sorting with custom order (pending, in_progress, completed)
+                    elseif ($sortColumn === 'status') {
+                        $query->orderByRaw("FIELD(status, 'pending', 'in_progress', 'completed') " . $sortType);
+                    }
+                    else {
+                        $query->orderBy($sortColumn, $sortType);
+                    }
                 }
             }
         }
