@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace app\Modules\Task\Providers;
+namespace App\Modules\Task\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -14,9 +14,6 @@ class TaskServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
-
-        Route::middleware('api')
-            ->group(base_path('app/Modules/Task/routes/api.php'));
     }
 
     /**
@@ -24,6 +21,8 @@ class TaskServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(base_path('app/Modules/Task/routes/api.php'));
     }
 }
