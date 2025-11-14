@@ -92,11 +92,33 @@ For Authentication, Laravel Sanctum is used.
 
 Current default expire time for token is 120 minutes, you can change it in `config/sanctum.php` file.
 
-Auth API ENDPOINTS:
+AUTH api endpoints:
 ```
 Login:  POST: 127.0.0.1:8275/api/login. | request-body: { "email": , "password": }
 Logout: POST: 127.0.0.1:8275/api/logout (auth required)
 ```
+
+TASKS api endpoints:
+
+-  Show All (GET) (auth required) : admin can get all tasks, normal user can get only his/her tasks
+```` 
+url: 127.0.0.1:8275/api/tasks?search=&full-search=&status=&priority=&assigned-to=&tags=&due-date-from=
+        &due-date-to=&sort=title&sort-type=desc&per-page=20&page=3&pagination-type=cursor
+        
+- search: search by title/description by key-words
+- full-search: search by title/description by full-text
+- status: filter by status (pending, in-progress, completed)
+- priority: filter by priority (low, medium, high)
+- assigned-to: filter by assigned user id [multiple ids separated by comma]
+- tags: filter by tags [multiple tags separated by comma]
+- due-date-from: filter by due date from (YYYY-MM-DD)
+- due-date-to: filter by due date to (YYYY-MM-DD)
+- sort: sort by field (title, due_date, priority, status, created_at)
+- sort-type: asc or desc
+- per-page: number of items per page
+- page: page number
+- pagination-type: page or cursor
+````
 
 ### Learning Laravel
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

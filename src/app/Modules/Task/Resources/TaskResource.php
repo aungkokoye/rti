@@ -16,6 +16,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property mixed $priority
  * @property mixed $metadata
  * @property mixed $due_date
+ * @property mixed $created_at
+ * @property mixed $updated_at
  */
 class TaskResource extends JsonResource
 {
@@ -33,9 +35,11 @@ class TaskResource extends JsonResource
             'status'        => $this->status,
             'priority'      => $this->priority,
             'metadata'      => $this->metadata,
-            'due_date'      => $this->due_date,
+            'due_date'      => $this->due_date->toDateString(),
             'assigned_to'   => UserResource::make($this->whenLoaded('user')),
             'tags'          => TagResource::collection($this->whenLoaded('tags')),
+            'created_at'    => $this->created_at->toDateTimeString(),
+            'updated_at'    => $this->updated_at->toDateTimeString(),
         ];
     }
 

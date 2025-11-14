@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
+/**
+ *
+ * @method static filter(array $filters)
+ */
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
@@ -20,6 +24,8 @@ class Task extends Model
     public static array $status = ['pending', 'in_progress', 'completed'];
 
     public static array $priority = ['low', 'medium', 'high'];
+
+    public static array $allowedFilters = ['created_at', 'due_date', 'priority', 'title'];
     protected $fillable = ['title', 'description', 'status', 'priority', 'version', 'metadata', 'due_date', 'assigned_to'];
 
     public function user(): BelongsTo
@@ -38,28 +44,65 @@ class Task extends Model
      */
     public function scopeFilter(EloquentBuilder| QueryBuilder $query, array $filters): EloquentBuilder | QueryBuilder
     {
-//        return
-//            $query->when($filters['search'] ?? null, function ($query, $search) {
-//                // where and or-where are grouped here to avoid logic issues
-//                $query->where(function ($query) use ($search) {
-//                    $query->where('title', 'like', "%{$search}%")
-//                        ->orWhere('description', 'like', "%{$search}%")
-//                        ->orWhereHas('employer', function ($query) use ($search) {
-//                            $query->where('company_name', 'like', "%{$search}%");
-//                        });
-//                });
-//            })->when($filters['min-salary'] ?? null, function ($query, $salary) {
-//                $query->where('salary', '>=', $salary);
-//            })
-//                ->when($filters['mix-salary'] ?? null, function ($query, $salary) {
-//                    $query->where('salary', '<=', $salary);
-//                })
-//                ->when($filters['experience'] ?? null, function ($query, $experience) {
-//                    $query->where('experience', $experience);
-//                })
-//                ->when($filters['category'] ?? null, function ($query, $category) {
-//                    $query->where('category', $category);
-//                });
+        // Grouped OR conditions
+        $query->where(function ($query) use ($filters) {
+                // keyword search
+                if (!empty($filters['search'])) {
+                    $search = $filters['search'];
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                }
+                // full-text search
+
+            });
+
+        if (!empty($filters['full-search'])) {
+            $fullSearch = $filters['full-search'];
+            $query->whereRaw("MATCH(title, description) AGAINST(? IN NATURAL LANGUAGE MODE)", [$fullSearch]);
+        }
+
+        if (!empty($filters['status']) && in_array($filters['status'], self::$status, true)) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['priority']) && in_array($filters['priority'], self::$priority, true)) {
+            $query->where('priority', $filters['priority']);
+        }
+
+        // if user is not admin, only show their tasks
+        if (! auth()->user()->isAdmin()){
+            $query->where('assigned_to', auth()->user()->id);
+        } elseif (!empty($filters['assigned-to'])) {
+            $query->whereIn('assigned_to', explode(',', $filters['assigned-to']));
+        }
+
+
+        if (!empty($filters['tags'])) {
+            $tagIds = explode(',', $filters['tags']);
+
+            $query->whereHas('tags', function ($q) use ($tagIds) {
+                $q->whereIn('tags.id', $tagIds);
+            });
+        }
+
+        if (!empty($filters['due-date-from'])) {
+            $query->whereDate('due_date', '>=', $filters['due-date-from']);
+        }
+
+        if (!empty($filters['due-date-to'])) {
+            $query->whereDate('due_date', '<=', $filters['due-date-to']);
+        }
+
+        if (!empty($filters['sort'])) {
+            $sorts = explode(',', $filters['sort']);
+
+            foreach ($sorts as $sortColumn) {
+                $sortType = (!empty($filters['sort-type']) && $filters['sort-type'] === 'asc') ? 'asc' : 'desc';
+                if (in_array($sortColumn, self::$allowedFilters, true)) {
+                    $query->orderBy($sortColumn, $sortType);
+                }
+            }
+        }
 
         return $query;
     }
@@ -80,5 +123,4 @@ class Task extends Model
             'metadata' => 'array',
         ];
     }
-
 }
