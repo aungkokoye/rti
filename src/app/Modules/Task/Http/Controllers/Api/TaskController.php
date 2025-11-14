@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Modules\Task\Http\Controllers\Api;
 
 use App\Modules\Task\Models\Task;
+use App\Modules\Task\Requests\CreateTaskRequest;
 use App\Modules\Task\Resources\TaskResource;
 use App\Traits\CanLoadRelations;
 use App\Traits\CustomPaginates;
@@ -57,17 +58,24 @@ class TaskController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateTaskRequest $request): TaskResource
     {
-        //
+        $validated = $request->validated();
+        $task = Task::create($validated);
+
+        if (!empty($validated['tags'])) {
+            $task->tags()->attach($validated['tags']);
+        }
+
+        return new TaskResource($this->loadRelations($task));
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Task $task): TaskResource
     {
-        //
+        return new TaskResource($this->loadRelations($task));
     }
 
     /**
