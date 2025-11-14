@@ -20,11 +20,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending')->index();
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium')->index();
-            $table->unsignedInteger('version');
+            $table->unsignedInteger('version')->default(1);
             $table->json('metadata')->nullable();
             $table->dateTime('due_date')->nullable()->index();
             $table->softDeletes();
             $table->timestamps();
+
+            $table->fullText(['title', 'description']);
         });
 
 

@@ -17,6 +17,14 @@ class Tag extends Model
 
     public function tasks(): BelongsToMany
     {
-        return $this->belongsToMany(Task::class)->withTimestamps();
+        return $this->belongsToMany(Task::class, 'task_tag')->withTimestamps();
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): TagFactory
+    {
+        return TagFactory::new();
     }
 }

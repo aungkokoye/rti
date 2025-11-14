@@ -5,6 +5,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Modules\Task\Database\Seeders\TagSeeder;
+use App\Modules\Task\Database\Seeders\TaskSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -30,6 +32,8 @@ class DatabaseSeeder extends Seeder
         User::factory(30)->create();
 
         $this->call([
+            TagSeeder::class,
+            TaskSeeder::class,
         ]);
     }
 }
