@@ -25,7 +25,7 @@ class CreateTaskRequest extends FormRequest
     {
         return [
             'assigned_to'       => 'nullable|exists:users,id',
-            'title'             => 'required|string|max:255',
+            'title'             => 'required|string|max:255|min:5',
             'description'       => 'nullable|string',
             'status'            => 'required|string|in:"pending", "in_progress"',
             'priority'          => 'required|string|in:' . implode(',', \App\Modules\Task\Models\Task::$priority),

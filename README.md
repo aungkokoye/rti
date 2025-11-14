@@ -1,5 +1,7 @@
 ## About Laravel Tutorial Task App
 
+ *** comparable with Mac Silicon ***
+
  PHP 8.4 | Laravel 11.x | MySQL 8.0 | Docker Compose 3.8 
  
  Composer 2.8 | Node 22.21.1 | NPM 10.9.4
