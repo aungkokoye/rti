@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends BaseController
 {
@@ -84,13 +86,28 @@ class TaskController extends BaseController
 
     /**
      * Update the specified resource in storage.
+     * Prevent race condition with optimistic locking
      */
     public function update(UpdateTaskRequest $request, Task $task): TaskResource
     {
         $validated = $request->validated();
-        $task->update($validated);
+        $tags = $validated['tags'] ?? null;
 
-        if (!empty($validated['tags'])) {
+        // Optimistic locking: atomic version check + update
+        $affected = DB::table('tasks')
+            ->where('id', $task->id)
+            ->where('version', $task->version)
+            ->update(
+                Arr::except($validated, ['tags']) + ['version' => DB::raw('version + 1')]
+            );
+
+        if (!$affected) {
+            abort(409, 'Task modified by another user');
+        }
+
+        $task->refresh(); // upload the latest data
+
+        if (!empty($tags)) {
             $task->tags()->sync($validated['tags']);
         }
 

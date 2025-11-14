@@ -17,7 +17,6 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  *
  * @method static filter(array $filters)
  * @method static create(array $array)
- * @property string $status
  */
 class Task extends Model
 {
