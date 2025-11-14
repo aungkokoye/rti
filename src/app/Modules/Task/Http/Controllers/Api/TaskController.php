@@ -5,11 +5,13 @@ namespace App\Modules\Task\Http\Controllers\Api;
 
 use App\Modules\Task\Models\Task;
 use App\Modules\Task\Requests\CreateTaskRequest;
+use App\Modules\Task\Requests\UpdateTaskRequest;
 use App\Modules\Task\Resources\TaskResource;
 use App\Traits\CanLoadRelations;
 use App\Traits\CustomPaginates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
 
 class TaskController extends BaseController
@@ -48,7 +50,9 @@ class TaskController extends BaseController
 //        );
 
         // App\Modules\Task\Models\Task::scopeFilter => filter()
-        $builder = Task::with(['user', 'tags'])->filter($request->only($this->allowedFilters));
+        $builder = Task::with(['user', 'tags'])
+            ->withTrashed()
+            ->filter($request->only($this->allowedFilters));
 
         $tasks = $this->applyPagination($builder, $request);
 
@@ -81,25 +85,45 @@ class TaskController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateTaskRequest $request, Task $task): TaskResource
     {
-        //
+        $validated = $request->validated();
+        $task->update($validated);
+
+        if (!empty($validated['tags'])) {
+            $task->tags()->sync($validated['tags']);
+        }
+
+        return new TaskResource($this->loadRelations($task));
     }
 
     /**
      * Restore the soft-deleted resource in storage.
      */
-    public function restore(Task $task)
+    public function restore(int $id): TaskResource
     {
-        //
-    }
+        $task = Task::withTrashed()->findOrFail($id);
+        $task->restore();
 
+        return new TaskResource($this->loadRelations($task));
+    }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Task $task)
+    public function destroy(Task $task): Response
     {
-        //
+        $task->delete();
+
+        return response()->noContent();
+    }
+
+    public function toggleStatus(Task $task): TaskResource
+    {
+        $currentIndex = array_search($task->status, Task::$status);
+        $nextIndex = $currentIndex + 1 !== count(Task::$status) ? $currentIndex + 1 : 0;
+        $task->update(['status' => Task::$status[$nextIndex]]);
+
+        return new TaskResource($this->loadRelations($task));
     }
 }

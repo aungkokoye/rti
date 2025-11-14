@@ -10,17 +10,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  *
  * @method static filter(array $filters)
  * @method static create(array $array)
+ * @property string $status
  */
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public static array $status = ['pending', 'in_progress', 'completed'];
 

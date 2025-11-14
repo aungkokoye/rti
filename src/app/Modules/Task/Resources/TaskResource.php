@@ -18,6 +18,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property mixed $due_date
  * @property mixed $created_at
  * @property mixed $updated_at
+ * @property mixed $deleted_at
  */
 class TaskResource extends JsonResource
 {
@@ -38,6 +39,7 @@ class TaskResource extends JsonResource
             'due_date'      => $this->due_date->toDateString(),
             'assigned_to'   => UserResource::make($this->whenLoaded('user')),
             'tags'          => TagResource::collection($this->whenLoaded('tags')),
+            'deleted_at'    => $this->deleted_at?->toDateTimeString(),
             'created_at'    => $this->created_at->toDateTimeString(),
             'updated_at'    => $this->updated_at->toDateTimeString(),
         ];

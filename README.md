@@ -129,6 +129,27 @@ url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
 
 -  Create (POST) (auth required)
 ````
+url: 127.0.0.1:8275/api/tasks?include=tags,user
+
+- json-body:
+        {
+            "title"         : "test title",
+            "description"   : "test description",
+            "status"        : "pending",
+            "priority"      : "low",
+            "metadata"      :   {
+                                    "location": "Natmouth",
+                                    "link"    : "http://mcclure.com/similique-libero-magni-inventore",
+                                    "uuid"    : "7da518b4-ea78-307c-bbb0-d1f293deeaf9"
+                                },
+            "assigned_to"   : 1,
+            "due_date"      : "2026-11-21",
+            "tags"          : [1,2,3]
+        }
+- include: get related models (tags, user)
+````
+Update (POST/PATCH) (auth required)
+````
 url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
 
 - json-body:
@@ -146,6 +167,21 @@ url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
             "due_date"      : "2026-11-21",
             "tags"          : [1,2,3]
         }
+- include: get related models (tags, user)
+````
+Delete (DELETE) (auth required)
+````
+url: 127.0.0.1:8275/api/tasks/{task_id}
+- status: 204 No Content
+````
+Restore (PATCH) (auth required)
+````
+url: 127.0.0.1:8275/api/tasks/{task_id}/restore?include=tags,user
+- include: get related models (tags, user)
+````
+Toggle (PATCH) (auth required) <cycle status: pending → in_progress → completed → pending>
+````
+url: 127.0.0.1:8275/api/tasks/{task_id}/toogle-status?include=tags,user
 - include: get related models (tags, user)
 ````
 
