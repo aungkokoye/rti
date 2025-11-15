@@ -96,9 +96,13 @@ Password: guest
 
 #### API Documentation
 
-For Authentication, Laravel Sanctum is used.
+- For Authentication, Laravel Sanctum is used.
 
-Current default expire time for token is 120 minutes, you can change it in `config/sanctum.php` file.
+- Current default expire time for token is 120 minutes, you can change it in `config/sanctum.php` file.
+
+- For Authorization, Laravel Policy is used.
+
+- For Rate Limiting, Laravel Throttle is used, current default is 30 requests per minute, can change it in `.env` file.
 
 AUTH api endpoints:
 ```

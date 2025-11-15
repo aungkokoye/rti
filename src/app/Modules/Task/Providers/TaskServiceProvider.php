@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Task\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,7 +23,7 @@ class TaskServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Route::middleware('api')
+        Route::middleware(['api', 'throttle:api'])
             ->prefix('api')
             ->group(base_path('app/Modules/Task/routes/api.php'));
     }
