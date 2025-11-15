@@ -72,6 +72,9 @@ class TaskController extends BaseController
     public function restore(int $id, TaskService $taskService): TaskResource
     {
         $task = Task::withTrashed()->findOrFail($id);
+
+        $this->authorize('restore', $task);
+
         $task->restore();
 
         return new TaskResource($taskService->attachRelations($task));
@@ -89,6 +92,8 @@ class TaskController extends BaseController
 
     public function toggleStatus(Task $task, TaskService $taskService): TaskResource
     {
+        $this->authorize('update', $task);
+
         $taskService->toggleTaskStatus($task);
 
         return new TaskResource($taskService->attachRelations($task));
