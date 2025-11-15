@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Task\Services;
 
+use App\Jobs\AuditLogJob;
 use App\Modules\Task\Models\Task;
 use App\Modules\Task\Notifications\TaskActionNotification;
 use App\Traits\CanLoadRelations;
@@ -110,5 +111,19 @@ class TaskService
         if (auth()->user()->id !== $task->assigned_to) {
             $task->user->notify(new TaskActionNotification($task, $action));
         }
+    }
+
+    public function saveToAuditLog(Task $task, string $action): void
+    {
+        $task->load(['user', 'tags']);
+        AuditLogJob::dispatch(
+            auth()->user()->id,
+            $task::class,
+            $task->id,
+            $task->toJson(),
+            $action
+        )
+            ->onConnection(config('queue.queue_connection'))
+            ->onQueue(config('queue.notification_queue'));
     }
 }

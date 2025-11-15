@@ -1,6 +1,6 @@
 ## About Laravel Tutorial Task App
 
- *** compatible with Mac Silicon ***
+ ***compatible with Apple Mac Silicon***
 
  PHP 8.4 | Laravel 11.x | MySQL 8.0 | Docker Compose 3.8 
  
@@ -29,7 +29,7 @@ docker exec -it laravel_app bash
 
 Copy .env.example to .env and update the credentials as needed.
 
-*** make sure run following commands inside the `laravel_app` container ***
+***make sure run following commands inside the `laravel_app` container***
 ````
 - composer install 
 - supervisorctl start queue_worker
@@ -47,32 +47,19 @@ user: root
 password: root
 database: task
 ````
-ID Plugin settings 
+ID Plugin settings
+
+***make sure run following commands inside the `laravel_app` container***
 ````
 composer require --dev barryvdh/laravel-ide-helper
 php artisan ide-helper:generate
 php artisan ide-helper:models --nowrite
 ````
-
-
 #### Schickling MailCatcher Documentation:
-
-*** When admin delete or restore a task, an email notification will be sent to the assigned user of that task. ***
-
 For testing email functionality, we are using the Schickling MailCatcher.
 It is accessible at `http://localhost:2080`.
 This allows you to view emails sent by the application without needing a real email server.
 MailCatcher is configured by setting the environment variable in your `.env` file:
-#### Laravel Crontab Scheduler 
-
-All scheduler commands are defined in `app/route/console.php` file.
-To run the scheduler, make sure the cron service is running as `scheduler` Docker container.
-`php artisan schedule:run` will be run every minute by cron inside that container.
-
-log view
-```
-docker logs laravel_scheduler -f
-```
 #### RabbitMQ Information:
 
 RabbitMQ is used for message queuing in the application.
@@ -106,13 +93,17 @@ Password: guest
 
 AUTH api endpoints:
 ```
-Login:  POST: 127.0.0.1:8275/api/login. | request-body: { "email": <user-eamil>, "password": "password" }
-- Amind user: 
-    email: admin@rti.com
-    password: password
-- Normal user:
-    email: user@rti.com
-    password: password
+Login:  POST: 127.0.0.1:8275/api/login. 
+            request-body: 
+                  { "email": <user-eamil>, 
+                    "password": "password" 
+                  }
+            Amind user: 
+                email: admin@rti.com
+                password: password
+            Normal user:
+                email: user@rti.com
+                password: password
     
 Logout: POST: 127.0.0.1:8275/api/logout (auth required)
 
@@ -138,7 +129,7 @@ url: 127.0.0.1:8275/api/tasks?search=&full-search=&status=&priority=&assigned-to
 - sort-type: asc or desc
 - per-page: number of items per page
 - page: page number
-- pagination-type: page or cursor
+- pagination-type: page or cursor (default:page)
 ````
 
 -  Show Details (GET) (auth required) : user can get only his/her task
@@ -169,7 +160,7 @@ url: 127.0.0.1:8275/api/tasks?include=tags,user
         }
 - include: get related models (tags, user)
 ````
-Update (POST/PATCH) (auth required)
+- Update (POST/PATCH) (auth required)
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
 
@@ -190,17 +181,17 @@ url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
         }
 - include: get related models (tags, user)
 ````
-Delete (DELETE) (auth required)
+- Delete (DELETE) (auth required)
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}
 - status: 204 No Content
 ````
-Restore (PATCH) (auth required)
+- Restore (PATCH) (auth required)
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}/restore?include=tags,user
 - include: get related models (tags, user)
 ````
-Toggle (PATCH) (auth required) <cycle status: pending → in_progress → completed → pending>
+- Toggle (PATCH) (auth required) <cycle status: pending → in_progress → completed → pending>
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}/toogle-status?include=tags,user
 - include: get related models (tags, user)
@@ -220,7 +211,7 @@ url: 127.0.0.1:8275/api/tags
             "color"        : "red",
         }
 ````
-Update (POST/PATCH) (auth required)
+- Update (POST/PATCH) (auth required)
 ````
 url: 127.0.0.1:8275/api/tags/{task_id}
 - json-body:
@@ -229,11 +220,76 @@ url: 127.0.0.1:8275/api/tags/{task_id}
             "color"        : "red",
         }
 ````
-Delete (DELETE) (auth required)
+- Delete (DELETE) (auth required)
 ````
 url:  127.0.0.1:8275/api/tags/{task_id}
 - status: 204 No Content
 ````
+
+#### Task Notification System
+
+The application sends email notifications to users when their assigned tasks are modified by an admin.
+
+How it works:
+
+- Service Layer (`TaskService::statusChangeNotification`)
+   - When an admin deletes or restores a task, the service checks if the current user is different from the assigned user
+   - If different, it sends a `TaskActionNotification` to the assigned user via email
+   - This ensures task owners are notified of important changes made by administrators
+
+- Notification Class (`TaskActionNotification`)
+   - Located at `app/Modules/Task/Notifications/TaskActionNotification.php`
+   - Uses Laravel's `Queueable` trait for potential async delivery
+   - Sends email via the `mail` channel
+   - Includes task title and action performed (deleted/restored)
+   - Personalized greeting with user's name
+
+- Configuration:
+  - Email service is configured via MailCatcher for development (port 2080)
+  - Configure SMTP settings in `.env` for production
+  - Notifications only sent when admin modifies another user's task (not their own)
+
+- Testing Emails:
+  - Access MailCatcher at `http://localhost:2080`
+  - All emails sent by the application are captured here
+  - No real email server required for development
+
+#### Audit Log System
+
+The application implements an asynchronous audit logging system using RabbitMQ message queues.
+
+How it works:
+
+- Service Layer (`TaskService::saveToAuditLog`)
+   - When a task is created, the service dispatches an `AuditLogJob` to the RabbitMQ queue
+   - Job is sent to the configured queue connection (`rabbitmq`) and queue name (`notification-queue`)
+   - This keeps the API response fast by offloading database writes to background workers
+
+- Queue Job (`AuditLogJob`)
+   - Implements `ShouldQueue` interface for async processing
+   - Receives: user_id, model class name, model id, JSON data, operation type
+   - Creates an `AuditLog` record in the database when processed
+
+- Database Storage (`audit_logs` table)
+
+- Configuration
+   - Queue connection: Defined in `config/queue.php` under `rabbitmq`
+   - Queue name: Set via `RABBITMQ_NOTIFICATION_QUEUE` in `.env` (default: `notification`)
+   - Supervisor manages the queue workers (see `supervisord.conf`)
+
+- Queue Worker Management:
+
+  ***make sure run following commands inside the `laravel_app` container***
+```
+# Start worker via Supervisor
+supervisorctl start queue_worker
+
+# View worker status
+supervisorctl status queue_worker
+
+# Process jobs manually (for testing)
+php artisan queue:work rabbitmq --queue=notification
+```
 
 ### Learning Laravel
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

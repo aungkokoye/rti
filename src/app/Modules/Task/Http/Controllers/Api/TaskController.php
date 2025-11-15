@@ -42,6 +42,7 @@ class TaskController extends BaseController
     {
         $validated = $request->validated();
         $task = $taskService->createTask($validated);
+        $taskService->saveToAuditLog($task, 'create');
 
         return new TaskResource($taskService->attachRelations($task));
     }
@@ -62,6 +63,7 @@ class TaskController extends BaseController
     {
         $validated = $request->validated();
         $updatedTask = $taskService->updateTask($task, $validated);
+        $taskService->saveToAuditLog($updatedTask, 'update');
 
         return new TaskResource($taskService->attachRelations($updatedTask));
     }
@@ -86,6 +88,7 @@ class TaskController extends BaseController
     {
         $task->delete();
         $taskService->statusChangeNotification($task, 'deleted');
+        $taskService->saveToAuditLog($task, 'delete');
 
         return response()->noContent();
     }
