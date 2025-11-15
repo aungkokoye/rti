@@ -57,12 +57,12 @@ php artisan ide-helper:models --nowrite
 
 #### Schickling MailCatcher Documentation:
 
-MailCatcher is configured by setting the environment variable in your `.env` file:
+*** When admin delete or restore a task, an email notification will be sent to the assigned user of that task. ***
 
 For testing email functionality, we are using the Schickling MailCatcher.
 It is accessible at `http://localhost:2080`.
 This allows you to view emails sent by the application without needing a real email server.
-
+MailCatcher is configured by setting the environment variable in your `.env` file:
 #### Laravel Crontab Scheduler 
 
 All scheduler commands are defined in `app/route/console.php` file.

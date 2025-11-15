@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Modules\Task\Services;
 
 use App\Modules\Task\Models\Task;
+use App\Modules\Task\Notifications\TaskActionNotification;
 use App\Traits\CanLoadRelations;
 use App\Traits\CustomPaginates;
 use Illuminate\Contracts\Pagination\CursorPaginator;
@@ -102,5 +103,12 @@ class TaskService
     public function attachRelations(Task $task): Model|QueryBuilder|EloquentBuilder|HasMany
     {
         return $this->loadRelations($task);
+    }
+
+    public function statusChangeNotification(Task $task, string $action): void
+    {
+        if (auth()->user()->id !== $task->assigned_to) {
+            $task->user->notify(new TaskActionNotification($task, $action));
+        }
     }
 }

@@ -72,10 +72,9 @@ class TaskController extends BaseController
     public function restore(int $id, TaskService $taskService): TaskResource
     {
         $task = Task::withTrashed()->findOrFail($id);
-
         $this->authorize('restore', $task);
-
         $task->restore();
+        $taskService->statusChangeNotification($task, 'restored');
 
         return new TaskResource($taskService->attachRelations($task));
     }
@@ -83,9 +82,10 @@ class TaskController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Task $task): Response
+    public function destroy(Task $task, TaskService $taskService): Response
     {
         $task->delete();
+        $taskService->statusChangeNotification($task, 'deleted');
 
         return response()->noContent();
     }
