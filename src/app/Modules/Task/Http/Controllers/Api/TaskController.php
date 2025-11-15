@@ -12,13 +12,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskController extends BaseController
 {
+    use AuthorizesRequests;
+
     public function __construct()
     {
         $this->middleware('auth:sanctum')
             ->only('index', 'show', 'store', 'update', 'destroy', 'restore', 'toggleStatus');
+        $this->authorizeResource(Task::class, 'task');
     }
 
     /**

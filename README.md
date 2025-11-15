@@ -106,8 +106,16 @@ Password: guest
 
 AUTH api endpoints:
 ```
-Login:  POST: 127.0.0.1:8275/api/login. | request-body: { "email": , "password": }
+Login:  POST: 127.0.0.1:8275/api/login. | request-body: { "email": <user-eamil>, "password": "password" }
+- Amind user: 
+    email: admin@rti.com
+    password: password
+- Normal user:
+    email: user@rti.com
+    password: password
+    
 Logout: POST: 127.0.0.1:8275/api/logout (auth required)
+
 Me:     GET:  127.0.0.1:8275/api/me (auth required)
 ```
 
@@ -202,7 +210,30 @@ TAG api endpoints:
 -  Show All (GET) (auth required) : get all tags
 ```` 
 url: 127.0.0.1:8275/api/tags
-
 ````
+-  Create (POST) (auth required)
+````
+url: 127.0.0.1:8275/api/tags
+- json-body:
+        {
+            "name"         : "test name",
+            "color"        : "red",
+        }
+````
+Update (POST/PATCH) (auth required)
+````
+url: 127.0.0.1:8275/api/tags/{task_id}
+- json-body:
+        {
+            "name"         : "test name",
+            "color"        : "red",
+        }
+````
+Delete (DELETE) (auth required)
+````
+url:  127.0.0.1:8275/api/tags/{task_id}
+- status: 204 No Content
+````
+
 ### Learning Laravel
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
