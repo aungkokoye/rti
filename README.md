@@ -1,6 +1,6 @@
 ## About Laravel Tutorial Task App
 
- ***compatible with Apple Mac Silicon***
+ ***compatible with Apple (Mac Silicon | Intel Silicon)***
 
  PHP 8.4 | Laravel 11.x | MySQL 8.0 | Docker Compose 3.8 
  
@@ -10,24 +10,23 @@
 ````
 git clone https://github.com/aungkokoye/rti.git
 cd rti
+cp src/.env.example src/.env
 ````
 #### how to start docker
 ````
 cd docker
-docker-compose up -d --build
+docker compose up --build -d
 ````
 #### how to stop docker
 ````
 cd docker
-docker-compose down
+docker compose down
 ````
 #### Inside app web container
 ````
 docker exec -it laravel_app bash
 ````
 #### Set Up
-
-Copy .env.example to .env and update the credentials as needed.
 
 ***make sure run following commands inside the `laravel_app` container***
 ````
