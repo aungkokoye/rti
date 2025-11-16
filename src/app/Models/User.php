@@ -63,7 +63,7 @@ class User extends Authenticatable
 
     public function tasks(): HasMany
     {
-        $this->hasMany(Task::class);
+        return $this->hasMany(Task::class, 'assigned_to');
     }
 
     public function isAdmin(): bool

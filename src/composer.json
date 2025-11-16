@@ -10,7 +10,8 @@
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.4"
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.4",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",

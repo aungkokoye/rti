@@ -31,6 +31,7 @@ Copy .env.example to .env and update the credentials as needed.
 
 ***make sure run following commands inside the `laravel_app` container***
 ````
+- cd /var/www/html
 - composer install 
 - supervisorctl start queue_worker
 - npm install && npm run build // optional: for FE assets
@@ -51,9 +52,10 @@ ID Plugin settings
 
 ***make sure run following commands inside the `laravel_app` container***
 ````
-composer require --dev barryvdh/laravel-ide-helper
-php artisan ide-helper:generate
-php artisan ide-helper:models --nowrite
+- cd /var/www/html
+- composer require --dev barryvdh/laravel-ide-helper
+- php artisan ide-helper:generate
+- php artisan ide-helper:models --nowrite
 ````
 #### Schickling MailCatcher Documentation:
 For testing email functionality, we are using the Schickling MailCatcher.
@@ -112,7 +114,8 @@ Me:     GET:  127.0.0.1:8275/api/me (auth required)
 
 TASKS api endpoints:
 
--  Show All (GET) (auth required) : admin can get all tasks, normal user can get only his/her tasks
+-  Show All (GET) (auth required) : admin can get all tasks, normal user can get only his/her tasks,
+                                     the result includes soft-deleted tasks.
 ```` 
 url: 127.0.0.1:8275/api/tasks?search=&full-search=&status=&priority=&assigned-to=&tags=&due-date-from=
         &due-date-to=&sort=title&sort-type=desc&per-page=20&page=3&pagination-type=cursor
@@ -160,7 +163,7 @@ url: 127.0.0.1:8275/api/tasks?include=tags,user
         }
 - include: get related models (tags, user)
 ````
-- Update (POST/PATCH) (auth required)
+- Update (POST/PATCH) (auth required) admin can update all tasks, normal user can update only his/her tasks
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
 
@@ -181,17 +184,19 @@ url: 127.0.0.1:8275/api/tasks/{task_id}?include=tags,user
         }
 - include: get related models (tags, user)
 ````
-- Delete (DELETE) (auth required)
+- Delete (DELETE) (auth required) admin can soft-delete all tasks, normal user can soft-delete only his/her tasks
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}
 - status: 204 No Content
 ````
-- Restore (PATCH) (auth required)
+- Restore (PATCH) (auth required) admin can restore all tasks, normal user restore only his/her tasks
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}/restore?include=tags,user
 - include: get related models (tags, user)
 ````
 - Toggle (PATCH) (auth required) <cycle status: pending → in_progress → completed → pending>
+
+  admin can toggle all tasks, normal user toggle only his/her tasks
 ````
 url: 127.0.0.1:8275/api/tasks/{task_id}/toogle-status?include=tags,user
 - include: get related models (tags, user)
@@ -290,6 +295,17 @@ supervisorctl status queue_worker
 # Process jobs manually (for testing)
 php artisan queue:work rabbitmq --queue=notification
 ```
+#### Testing:
+
+How to run the tests (unit and feature tests) inside the `laravel_app` container:
+
+***make sure run following commands inside the `laravel_app` container***
+````
+- cd /var/www/html
+- php artisan db:create-test-database  // create test database if not exists
+- php artisan test  
+- XDEBUG_MODE=coverage php artisan test --coverage    // with code coverage
+````
 
 ### Learning Laravel
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

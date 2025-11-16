@@ -36,7 +36,7 @@ class TaskResource extends JsonResource
             'status'        => $this->status,
             'priority'      => $this->priority,
             'metadata'      => $this->metadata,
-            'due_date'      => $this->due_date->toDateString(),
+            'due_date'      => $this->due_date?->toDateString(),
             'assigned_to'   => UserResource::make($this->whenLoaded('user')),
             'tags'          => TagResource::collection($this->whenLoaded('tags')),
             'deleted_at'    => $this->deleted_at?->toDateTimeString(),
