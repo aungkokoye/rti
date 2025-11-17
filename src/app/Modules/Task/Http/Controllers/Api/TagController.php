@@ -7,16 +7,18 @@ use App\Modules\Task\Models\Tag;
 use App\Modules\Task\Requests\TagRequest;
 use App\Modules\Task\Resources\TagResource;
 use App\Traits\CustomPaginates;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 
 class TagController extends BaseController
 {
-    use CustomPaginates;
+    use CustomPaginates, AuthorizesRequests;
     public function __construct()
     {
         $this->middleware('auth:sanctum')->only(['index', 'store', 'update', 'destroy']);
+        $this->authorizeResource(Tag::class, 'tag');
     }
 
     /**

@@ -202,11 +202,11 @@ url: 127.0.0.1:8275/api/tasks/{task_id}/toogle-status?include=tags,user
 ````
 TAG api endpoints:
 
--  Show All (GET) (auth required) : get all tags
+-  Show All (GET) (auth required)
 ```` 
 url: 127.0.0.1:8275/api/tags
 ````
--  Create (POST) (auth required)
+-  Create (POST) (auth required) admin only
 ````
 url: 127.0.0.1:8275/api/tags
 - json-body:
@@ -215,7 +215,7 @@ url: 127.0.0.1:8275/api/tags
             "color"        : "red",
         }
 ````
-- Update (POST/PATCH) (auth required)
+- Update (POST/PATCH) (auth required) admin only
 ````
 url: 127.0.0.1:8275/api/tags/{task_id}
 - json-body:
@@ -224,7 +224,7 @@ url: 127.0.0.1:8275/api/tags/{task_id}
             "color"        : "red",
         }
 ````
-- Delete (DELETE) (auth required)
+- Delete (DELETE) (auth required) admin only
 ````
 url:  127.0.0.1:8275/api/tags/{task_id}
 - status: 204 No Content

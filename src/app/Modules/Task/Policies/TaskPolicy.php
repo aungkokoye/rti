@@ -56,14 +56,6 @@ class TaskPolicy
         return $this->ownershipCheck($user, $task);
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user): bool
-    {
-        return $user->isAdmin();
-    }
-
     private function ownershipCheck(User $user, Task $task): bool
     {
         return $user->isAdmin() || $task->assigned_to === $user->id;
